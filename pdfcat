@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "pypdf>=5.0.0",
+# ]
+# ///
+
+import sys
+from pathlib import Path
+from pypdf import PdfWriter, PdfReader
+
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: pdfcat <output.pdf> <input1.pdf> [input2.pdf ...]")
+        sys.exit(1)
+
+    output_file = sys.argv[1]
+    input_files = sys.argv[2:]
+
+    if not output_file.endswith(".pdf"):
+        output_file += ".pdf"
+
+    writer = PdfWriter()
+
+    for pdf_path in input_files:
+        path = Path(pdf_path)
+        if not path.exists():
+            print(f"Error: '{pdf_path}' not found")
+            sys.exit(1)
+
+        print(f"Adding: {pdf_path}")
+        reader = PdfReader(str(path))
+        for page in reader.pages:
+            writer.add_page(page)
+
+    print(f"Writing: {output_file}")
+    with open(output_file, "wb") as f:
+        writer.write(f)
+
+    print(f"Done: {len(input_files)} files merged -> {output_file}")
+
+
+if __name__ == "__main__":
+    main()
