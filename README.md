@@ -16,6 +16,7 @@ pdfcat() {
 
 ```bash
 pdfcat output.pdf input1.pdf input2.pdf ...
+pdfcat output.pdf scan.pdf photo.jpg diagram.png
 ```
 
 The output extension is optional:
@@ -24,7 +25,7 @@ The output extension is optional:
 pdfcat merged part1.pdf part2.pdf
 ```
 
-Progress is printed to stderr. Inputs are copied as PDF pages without rasterizing or recompressing page contents.
+Progress is printed to stderr. PDF inputs are copied as PDF pages without rasterizing or recompressing page contents. Image inputs are converted to A4 PDF pages, centered with their aspect ratio preserved.
 
 You can also run the script directly:
 
