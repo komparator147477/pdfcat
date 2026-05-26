@@ -2,24 +2,32 @@
 
 A tiny script to concatenate PDF files without recompression. Just glues them together.
 
-Usage:
+## Install
 
-```bash
-uv run --script pdfcat output.pdf input1.pdf input2.pdf ...
-```
-
-Or add a shell function to make it available as a command:
+Requires `uv`. Add this to `~/.zshrc`:
 
 ```zsh
 pdfcat() {
-    uv run --script /path/to/pdfcat "$@"
+    uv run --script ~/coding/pdfcat/pdfcat "$@"
 }
 ```
 
-Then:
+## Usage
 
 ```bash
-pdfcat merged.pdf part1.pdf part2.pdf part3.pdf
+pdfcat output.pdf input1.pdf input2.pdf ...
 ```
 
-Requires uv. Uses pypdf internally.
+The output extension is optional:
+
+```bash
+pdfcat merged part1.pdf part2.pdf
+```
+
+Progress is printed to stderr. Inputs are copied as PDF pages without rasterizing or recompressing page contents.
+
+You can also run the script directly:
+
+```bash
+uv run --script ~/coding/pdfcat/pdfcat merged.pdf part1.pdf part2.pdf
+```

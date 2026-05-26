@@ -6,15 +6,24 @@
 # ]
 # ///
 
+import logging
 import sys
 from pathlib import Path
 from pypdf import PdfWriter, PdfReader
+from pypdf.errors import FileNotDecryptedError, PdfReadError
+
+
+logging.getLogger("pypdf").setLevel(logging.CRITICAL)
+
+
+def die(message: str, code: int = 1) -> None:
+    print(f"pdfcat: {message}", file=sys.stderr)
+    raise SystemExit(code)
 
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: pdfcat <output.pdf> <input1.pdf> [input2.pdf ...]")
-        sys.exit(1)
+        die("usage: pdfcat <output.pdf> <input1.pdf> [input2.pdf ...]", 2)
 
     output_file = sys.argv[1]
     input_files = sys.argv[2:]
@@ -27,19 +36,32 @@ def main():
     for pdf_path in input_files:
         path = Path(pdf_path)
         if not path.exists():
-            print(f"Error: '{pdf_path}' not found")
-            sys.exit(1)
+            die(f"input not found: {pdf_path}")
+        if path.is_dir():
+            die(f"input is a directory: {pdf_path}")
 
-        print(f"Adding: {pdf_path}")
-        reader = PdfReader(str(path))
-        for page in reader.pages:
-            writer.add_page(page)
+        print(f"Adding: {pdf_path}", file=sys.stderr)
+        try:
+            reader = PdfReader(str(path))
+            if reader.is_encrypted:
+                die(f"encrypted PDF requires a password: {pdf_path}")
+            for page in reader.pages:
+                writer.add_page(page)
+        except FileNotDecryptedError:
+            die(f"encrypted PDF requires a password: {pdf_path}")
+        except PdfReadError as exc:
+            die(f"invalid or unreadable PDF: {pdf_path}: {exc}")
+        except OSError as exc:
+            die(f"cannot read input: {pdf_path}: {exc}")
 
-    print(f"Writing: {output_file}")
-    with open(output_file, "wb") as f:
-        writer.write(f)
+    print(f"Writing: {output_file}", file=sys.stderr)
+    try:
+        with open(output_file, "wb") as f:
+            writer.write(f)
+    except OSError as exc:
+        die(f"cannot write output: {output_file}: {exc}")
 
-    print(f"Done: {len(input_files)} files merged -> {output_file}")
+    print(f"Done: {len(input_files)} files merged -> {output_file}", file=sys.stderr)
 
 
 if __name__ == "__main__":
